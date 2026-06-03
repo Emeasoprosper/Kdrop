@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "name": "kdrop",
+  "public": false,
+  "builds": [
+    {
+      "src": "knowledge-drop/package.json",
+      "use": "@vercel/static-builds",
+      "config": { "distDir": "knowledge-drop/build" }
+    },
+    {
+      "src": "server/index.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "server/index.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "knowledge-drop/build/index.html"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

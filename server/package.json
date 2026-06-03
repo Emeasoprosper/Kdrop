@@ -1,5 +1,5 @@
 {
-  "name": "knowledge-drop-server",
+  "name": "kdrop-server",
   "version": "0.1.0",
   "private": true,
   "main": "index.js",
