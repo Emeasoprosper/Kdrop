@@ -4,16 +4,18 @@ const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
-function getOAuth2Client() {
+function getOAuth2Client(redirectUri) {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.SERVER_URL || "http://localhost:3001"}/auth/callback`
+    redirectUri
   );
 }
 
 router.get("/google", (req, res) => {
-  const oauth2Client = getOAuth2Client();
+  // build redirect URI from request so dev and prod callbacks are supported
+  const redirectUri = `${process.env.SERVER_URL}/auth/callback`;
+  const oauth2Client = getOAuth2Client(redirectUri);
   const scopes = [
     "https://www.googleapis.com/auth/userinfo.profile",
     "https://www.googleapis.com/auth/userinfo.email",
@@ -32,8 +34,9 @@ router.get("/callback", async (req, res) => {
   if (!code) return res.redirect(`${process.env.CLIENT_URL}?auth=error`);
 
   try {
-    const oauth2Client = getOAuth2Client();
-    const { tokens } = await oauth2Client.getToken(code);
+    const redirectUri = `${process.env.SERVER_URL}/auth/callback`;
+    const oauth2Client = getOAuth2Client(redirectUri);
+    const { tokens } = await oauth2Client.getToken({ code, redirect_uri: redirectUri });
     oauth2Client.setCredentials(tokens);
 
     const oauth2 = google.oauth2({ version: "v2", auth: oauth2Client });

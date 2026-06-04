@@ -12,11 +12,7 @@ const IconMenu = () => (
     <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
   </svg>
 );
-const IconSparkle = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="#1A1A3F">
-    <path d="M12 2l2.4 7.6H22l-6.2 4.5 2.4 7.6L12 17.2l-6.2 4.5 2.4-7.6L2 9.6h7.6z" />
-  </svg>
-);
+
 const IconArrowRight = () => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
     <line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" />
@@ -167,9 +163,9 @@ function Nav({ logoRef, menuOpen, setMenuOpen, user, onSignInClick, page, setPag
           <span style={{ fontWeight: 700, fontSize: 20, letterSpacing: "-0.01em" }}>Knowledge Drop</span>
         </div>
         <nav style={{ display: "flex", alignItems: "center", gap: 32 }} className="nav-desktop">
-          <a href="#" onClick={(e) => { e.preventDefault(); setPage("home"); }} style={{ fontWeight: 600, fontSize: 14, color: page === "home" ? "#1A1A3F" : "#4F4F6F" }}>Home</a>
-          <a href="#" style={{ fontWeight: 600, fontSize: 14, color: "#4F4F6F" }}>Explore</a>
-          <a href="#" style={{ fontWeight: 600, fontSize: 14, color: "#4F4F6F" }}>Community</a>
+          <button type="button" onClick={(e) => { e.preventDefault(); setPage("home"); }} style={{ fontWeight: 600, fontSize: 14, color: page === "home" ? "#1A1A3F" : "#4F4F6F", background: "none" }}>Home</button>
+          <button type="button" style={{ fontWeight: 600, fontSize: 14, color: "#4F4F6F", background: "none" }}>Explore</button>
+          <button type="button" style={{ fontWeight: 600, fontSize: 14, color: "#4F4F6F", background: "none" }}>Community</button>
           {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 16px 6px 6px", borderRadius: 999, border: "1px solid #e5e7eb", background: "#f9fafb", cursor: "pointer" }} onClick={() => setPage("dashboard")}>
@@ -188,9 +184,9 @@ function Nav({ logoRef, menuOpen, setMenuOpen, user, onSignInClick, page, setPag
       </div>
       {menuOpen && (
         <div style={{ padding: "16px 24px 24px", borderTop: "1px solid #f0f0f0", display: "flex", flexDirection: "column", gap: 16 }}>
-          <a href="#" style={{ fontWeight: 600, fontSize: 15 }}>Home</a>
-          <a href="#" style={{ fontWeight: 600, fontSize: 15, color: "#4F4F6F" }}>Explore</a>
-          <a href="#" style={{ fontWeight: 600, fontSize: 15, color: "#4F4F6F" }}>Community</a>
+          <button type="button" style={{ fontWeight: 600, fontSize: 15, background: "none" }}>Home</button>
+          <button type="button" style={{ fontWeight: 600, fontSize: 15, color: "#4F4F6F", background: "none" }}>Explore</button>
+          <button type="button" style={{ fontWeight: 600, fontSize: 15, color: "#4F4F6F", background: "none" }}>Community</button>
           {user ? (
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <UserAvatar user={user} size={32} />
@@ -224,7 +220,7 @@ export default function App() {
   const [showSignIn, setShowSignIn]   = useState(false);
   const [user, setUser]               = useState(null);
   const [page, setPage]               = useState("home");
-  const [authChecked, setAuthChecked] = useState(false);
+  const [, setAuthChecked] = useState(false);
   const logoRef = useRef(null);
 
   useEffect(() => {
@@ -500,7 +496,7 @@ function LandingPage({ onSignInClick, user, setPage }) {
             {[{heading:"Platform",links:["About Us","Community"]},{heading:"Legal",links:["Privacy Policy","Terms"]}].map(col=>(
               <div key={col.heading} style={{ display:"flex",flexDirection:"column",gap:16 }}>
                 <span style={{ fontWeight:800,fontSize:12,textTransform:"uppercase",letterSpacing:"0.1em" }}>{col.heading}</span>
-                {col.links.map(l=><a key={l} href="#" style={{ color:"#4F4F6F",fontWeight:500,fontSize:14 }}>{l}</a>)}
+                {col.links.map(l=>(<button key={l} type="button" style={{ color:"#4F4F6F",fontWeight:500,fontSize:14, background: "none" }}>{l}</button>))}
               </div>
             ))}
             <div style={{ display:"flex",flexDirection:"column",gap:16 }}>
