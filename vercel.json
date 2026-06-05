@@ -14,18 +14,15 @@
   "routes": [
     {
       "src": "/auth/(.*)",
-      "dest": "server/index.js"
+      "dest": "/server/index.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "server/index.js"
-    },
-    {
-      "handle": "filesystem"
+      "dest": "/server/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "knowledge-drop/build/index.html"
+      "dest": "/knowledge-drop/build/$1"
     }
   ]
 }

@@ -3,6 +3,8 @@ const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
 const authRoutes = require("./routes/auth");
+const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -45,9 +47,21 @@ app.use(session({
 
 app.use("/auth", authRoutes);
 
-app.get("/", (req, res) => {
-  res.json({ status: "Knowledge Drop server is running" });
-});
+// Serve frontend static files if the build folder exists (for Vercel deployment)
+const frontBuildPath = path.join(__dirname, '..', 'knowledge-drop', 'build');
+if (fs.existsSync(frontBuildPath)) {
+  app.use(express.static(frontBuildPath));
+
+  // any non-auth route should serve index.html (single-page app)
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/auth') || req.path.startsWith('/api')) return next();
+    res.sendFile(path.join(frontBuildPath, 'index.html'));
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.json({ status: "Knowledge Drop server is running" });
+  });
+}
 
 if (require.main === module) {
   app.listen(PORT, () => {

@@ -4,7 +4,11 @@ import UploadPage from "./UploadPage";
 import SuccessPage from "./SuccessPage";
 import DashboardPage from "./DashboardPage";
 
-const API = process.env.REACT_APP_API_URL || "http://localhost:3001";
+const API = (typeof process !== 'undefined' && process.env && process.env.REACT_APP_API_URL)
+  ? process.env.REACT_APP_API_URL
+  : (typeof window !== 'undefined' && window.location && window.location.hostname === 'localhost')
+    ? 'http://localhost:3001'
+    : '';
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
 const IconMenu = () => (
@@ -335,15 +339,15 @@ function LandingPage({ onSignInClick, user, setPage }) {
     const colors = ["#4f46e5","#10b981","#f59e0b","#ef4444","#8b5cf6"];
     const initials = ["AO","BK","CE","DE","EF"];
     return (
-      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-        <div style={{ display:"flex" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
+        <div style={{ display: "flex" }}>
           {colors.map((c,i) => (
             <div key={i} style={{ width:32, height:32, borderRadius:"50%", background:c, border:"2px solid #D4FF33", marginLeft: i>0 ? -10 : 0, display:"flex", alignItems:"center", justifyContent:"center", zIndex:5-i }}>
               <span style={{ color:"#fff", fontSize:10, fontWeight:800 }}>{initials[i]}</span>
             </div>
           ))}
         </div>
-        <div>
+        <div style={{ marginTop: 4 }}>
           <div style={{ fontWeight:800, fontSize:13, color:"#1A1A3F" }}>20k+ signed in</div>
           <div style={{ fontSize:11, color:"rgba(26,26,63,0.5)", fontWeight:500 }}>Join the community</div>
         </div>

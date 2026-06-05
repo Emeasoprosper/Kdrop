@@ -4,6 +4,41 @@ const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const router = express.Router();
 
+function parseUrl(value) {
+  try {
+    return new URL(value.replace(/\/$/, ""));
+  } catch {
+    return null;
+  }
+}
+
+function buildUrlFromRequest(req) {
+  const proto = req.headers["x-forwarded-proto"] || req.protocol;
+  return `${proto}://${req.get("host")}`.replace(/\/$/, "");
+}
+
+function getServerUrl(req) {
+  const requestUrl = buildUrlFromRequest(req);
+  if (process.env.SERVER_URL) {
+    const envUrl = parseUrl(process.env.SERVER_URL);
+    if (envUrl && (process.env.NODE_ENV === "production" || envUrl.host === req.get("host"))) {
+      return envUrl.href.replace(/\/$/, "");
+    }
+  }
+  return requestUrl;
+}
+
+function getClientUrl(req) {
+  const requestOrigin = req.headers.origin ? req.headers.origin.replace(/\/$/, "") : buildUrlFromRequest(req);
+  if (process.env.CLIENT_URL) {
+    const envUrl = parseUrl(process.env.CLIENT_URL);
+    if (envUrl && (process.env.NODE_ENV === "production" || envUrl.host === req.get("host") || envUrl.href === requestOrigin)) {
+      return envUrl.href.replace(/\/$/, "");
+    }
+  }
+  return requestOrigin;
+}
+
 function getOAuth2Client(redirectUri) {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -14,7 +49,7 @@ function getOAuth2Client(redirectUri) {
 
 router.get("/google", (req, res) => {
   // build redirect URI from request so dev and prod callbacks are supported
-  const redirectUri = `${process.env.SERVER_URL}/auth/callback`;
+  const redirectUri = `${getServerUrl(req)}/auth/callback`;
   const oauth2Client = getOAuth2Client(redirectUri);
   const scopes = [
     "https://www.googleapis.com/auth/userinfo.profile",
@@ -31,10 +66,11 @@ router.get("/google", (req, res) => {
 
 router.get("/callback", async (req, res) => {
   const { code } = req.query;
-  if (!code) return res.redirect(`${process.env.CLIENT_URL}?auth=error`);
+  const clientUrl = getClientUrl(req);
+  if (!code) return res.redirect(`${clientUrl}?auth=error`);
 
   try {
-    const redirectUri = `${process.env.SERVER_URL}/auth/callback`;
+    const redirectUri = `${getServerUrl(req)}/auth/callback`;
     const oauth2Client = getOAuth2Client(redirectUri);
     const { tokens } = await oauth2Client.getToken({ code, redirect_uri: redirectUri });
     oauth2Client.setCredentials(tokens);
@@ -50,10 +86,10 @@ router.get("/callback", async (req, res) => {
       avatar: userInfo.picture,
     };
 
-    res.redirect(`${process.env.CLIENT_URL}?auth=success`);
+    res.redirect(`${clientUrl}?auth=success`);
   } catch (err) {
     console.error("OAuth callback error:", err);
-    res.redirect(`${process.env.CLIENT_URL}?auth=error`);
+    res.redirect(`${clientUrl}?auth=error`);
   }
 });
 
