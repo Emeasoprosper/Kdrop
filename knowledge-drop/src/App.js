@@ -128,7 +128,7 @@ function StatCard({ icon, value, label, delay, highlight }) {
 }
 
 // ── Google Sign In Modal ──────────────────────────────────────────────────────
-function GoogleSignInModal({ onClose }) {
+function GoogleSignInModal({ onClose, onSkip }) {
   const handleSignIn = () => {
     window.location.href = `${API}/auth/google`;
   };
@@ -149,6 +149,14 @@ function GoogleSignInModal({ onClose }) {
           <GoogleLogo />
           Continue with Google
         </button>
+        {onSkip && (
+          <button
+            onClick={onSkip}
+            style={{ width: "100%", padding: "12px 24px", borderRadius: 999, border: "1px solid transparent", background: "#f3f4f6", color: "#1A1A3F", fontWeight: 700, fontSize: 15, cursor: "pointer" }}
+          >
+            Continue without Google
+          </button>
+        )}
         <p style={{ fontSize: 12, color: "#9ca3af", textAlign: "center", lineHeight: 1.6 }}>
           By continuing, you agree to our Terms of Service and Privacy Policy.
         </p>
@@ -217,20 +225,42 @@ function UserAvatar({ user, size = 32 }) {
 }
 
 // ── Main App ──────────────────────────────────────────────────────────────────
+// TEMP DEV BYPASS — flip this to false (or delete the block below)
+// once Google OAuth redirect URIs are sorted out. Skips the sign-in wall
+// entirely so the rest of the app can be built/tested without auth.
+const DEV_BYPASS_AUTH = true;
+const DEV_FAKE_USER = { name: "Test User", avatar: null };
+const GUEST_USER = { name: "Guest", avatar: null };
+
 export default function App() {
   const [menuOpen, setMenuOpen]       = useState(false);
   const [introDone, setIntroDone]     = useState(false);
   const [logoTarget, setLogoTarget]   = useState(null);
   const [showSignIn, setShowSignIn]   = useState(false);
-  const [user, setUser]               = useState(null);
-  const [page, setPage]               = useState("home");
+  // No auth required right now; start as guest and go straight to upload.
+  const [user, setUser]               = useState(GUEST_USER);
+  const [page, setPage]               = useState("upload");
+  const [authError, setAuthError]     = useState(null);
   const [, setAuthChecked] = useState(false);
   const logoRef = useRef(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const authStatus = params.get("auth");
+    const authReason = params.get("reason");
+
+    // TEMP: error banner disabled while sign-in flow is being reworked.
+    // Re-enable once Google OAuth redirect URIs are fixed.
+    if (authStatus === "error" && !DEV_BYPASS_AUTH) {
+      setAuthError(authReason ? decodeURIComponent(authReason) : "Google sign-in failed. Please try again.");
+    }
+
     if (authStatus) window.history.replaceState({}, "", window.location.pathname);
+
+    if (DEV_BYPASS_AUTH) {
+      setAuthChecked(true);
+      return; // skip the /auth/me network call entirely while bypassing
+    }
 
     fetch(`${API}/auth/me`, { credentials: "include" })
       .then(r => r.json())
@@ -311,7 +341,7 @@ export default function App() {
       `}</style>
 
       {!introDone && <Intro onDone={() => setIntroDone(true)} logoTarget={logoTarget} />}
-      {showSignIn && <GoogleSignInModal onClose={() => setShowSignIn(false)} />}
+      {showSignIn && <GoogleSignInModal onClose={() => setShowSignIn(false)} onSkip={() => { setShowSignIn(false); setUser(GUEST_USER); setPage('upload'); setAuthError(null); }} />}
 
       <Nav
         logoRef={logoRef}
@@ -323,6 +353,14 @@ export default function App() {
         setPage={setPage}
         onLogout={handleLogout}
       />
+
+      {authError && (
+        <div style={{ maxWidth: 1280, margin: "16px auto", padding: "16px 20px", borderRadius: 20, background: "#fee2e2", color: "#991b1b", fontWeight: 600, boxShadow: "0 16px 40px rgba(153,27,27,0.12)" }}>
+          {authError === "access_denied"
+            ? "Google sign-in was canceled or denied. Please try again."
+            : authError}
+        </div>
+      )}
 
       {page === "upload"    && <UploadPage user={user} onSuccess={() => setPage("success")} apiBase={API} />}
       {page === "success"   && <SuccessPage onUploadAnother={() => setPage("upload")} onViewDashboard={() => setPage("dashboard")} />}

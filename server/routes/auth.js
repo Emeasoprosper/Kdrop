@@ -67,7 +67,11 @@ router.get("/google", (req, res) => {
 router.get("/callback", async (req, res) => {
   const { code } = req.query;
   const clientUrl = getClientUrl(req);
-  if (!code) return res.redirect(`${clientUrl}?auth=error`);
+  const oauthError = req.query.error;
+  if (!code) {
+    const reason = oauthError || "missing_code";
+    return res.redirect(`${clientUrl}?auth=error&reason=${encodeURIComponent(reason)}`);
+  }
 
   try {
     const redirectUri = `${getServerUrl(req)}/auth/callback`;
@@ -89,7 +93,8 @@ router.get("/callback", async (req, res) => {
     res.redirect(`${clientUrl}?auth=success`);
   } catch (err) {
     console.error("OAuth callback error:", err);
-    res.redirect(`${clientUrl}?auth=error`);
+    const errorReason = err.response?.data?.error_description || err.response?.data?.error || err.message || "callback_failed";
+    res.redirect(`${clientUrl}?auth=error&reason=${encodeURIComponent(errorReason)}`);
   }
 });
 

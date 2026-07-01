@@ -21,11 +21,8 @@
       "dest": "/server/index.js"
     },
     {
-      "handle": "filesystem"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/index.html"
+      "dest": "/knowledge-drop/build/index.html"
     }
   ]
 }
