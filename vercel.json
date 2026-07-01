@@ -5,21 +5,9 @@
       "src": "knowledge-drop/package.json",
       "use": "@vercel/static-build",
       "config": { "distDir": "build" }
-    },
-    {
-      "src": "server/index.js",
-      "use": "@vercel/node"
     }
   ],
   "routes": [
-    {
-      "src": "/auth/(.*)",
-      "dest": "/server/index.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/server/index.js"
-    },
     {
       "src": "/(.*)",
       "dest": "/knowledge-drop/build/index.html"

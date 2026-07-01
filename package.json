@@ -6,6 +6,7 @@
     "server": "cd server && npm start",
     "client": "cd knowledge-drop && npm start",
     "build": "cd knowledge-drop && npm run build",
+    "vercel-build": "cd knowledge-drop && npm run build",
     "deploy": "npx vercel --prod"
   },
   "dependencies": {
